@@ -1,10 +1,11 @@
-
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+import requests
+from bs4 import BeautifulSoup
 from tkinter import *
 from tkinter.ttk import *
 from tkinter import ttk, StringVar
-from tkinter import messagebox
+
 
 import time
 
@@ -48,42 +49,61 @@ def loginFunc():
     driver.get(url)
     str_id = tb_id.get()
     str_pw = tb_pw.get()
-    driver.find_element_by_css_selector('#input-username').send_keys(str_id)  # str_id
-    driver.find_element_by_css_selector('#input-password').send_keys(str_pw)  # str_pw
+    driver.find_element_by_css_selector('#input-username').send_keys("12180481")  # str_id
+    driver.find_element_by_css_selector('#input-password').send_keys("01230123bb1!")  # str_pw
     driver.find_element_by_css_selector('#input-password').send_keys(Keys.ENTER)
+
+    driver.find_element_by_css_selector('span.close_notice').click() #안내 창 닫아
+
+    html = driver.page_source
+    soup = BeautifulSoup(html)
+    crs_name = soup.select('.course-name')
+
+    crs_list = []
+    for i in crs_name:
+        crs_list.append(i.select_one('.course-title').text) #리스트에 과목명 저장
+    print(crs_list)
+
 
 btn_login = Button(win, text="LOG IN", command=loginFunc)
 btn_login.grid(row=4, column=1)
 
 
-# 강의검색
-lb_lec = Label(win, text=' [ PLAY LIST ]')
-lb_lec.grid(row=5, column=0)
 
-lb_lec1 = Label(win, text=' 1st ')
-lb_lec1.grid(row=6, column=0)
 
-str_lec1 = StringVar()
-tb_lec1 = ttk.Entry(win, width=20, textvariable=str_lec1)
-tb_lec1.grid( row = 6, column = 1)
 
-lb_lec2 = Label(win, text=' 2nd ')
-lb_lec2.grid(row=7, column=0)
 
-str_lec2 = StringVar()
-tb_lec2 = ttk.Entry(win, width=20, textvariable=str_lec2)
-tb_lec2.grid( row = 7, column = 1)
 
-lb_lec3 = Label(win, text=' 3rd ')
-lb_lec3.grid(row=8, column=0)
 
-str_lec3 = StringVar()
-tb_lec3 = ttk.Entry(win, width=20, textvariable=str_lec3)
-tb_lec3.grid( row = 8, column = 1)
-
-btn_play = Button(win, text="PLAY")
-btn_play.grid(row=9, column=1)
-
+#
+# # 강의검색
+# lb_lec = Label(win, text=' [ PLAY LIST ]')
+# lb_lec.grid(row=5, column=0)
+#
+# lb_lec1 = Label(win, text=' 1st ')
+# lb_lec1.grid(row=6, column=0)
+#
+# str_lec1 = StringVar()
+# tb_lec1 = ttk.Entry(win, width=20, textvariable=str_lec1)
+# tb_lec1.grid( row = 6, column = 1)
+#
+# lb_lec2 = Label(win, text=' 2nd ')
+# lb_lec2.grid(row=7, column=0)
+#
+# str_lec2 = StringVar()
+# tb_lec2 = ttk.Entry(win, width=20, textvariable=str_lec2)
+# tb_lec2.grid( row = 7, column = 1)
+#
+# lb_lec3 = Label(win, text=' 3rd ')
+# lb_lec3.grid(row=8, column=0)
+#
+# str_lec3 = StringVar()
+# tb_lec3 = ttk.Entry(win, width=20, textvariable=str_lec3)
+# tb_lec3.grid( row = 8, column = 1)
+#
+# btn_play = Button(win, text="PLAY")
+# btn_play.grid(row=9, column=1)
+#
 
 
 
