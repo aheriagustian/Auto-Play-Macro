@@ -1,6 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-import requests
+import urllib.request
 from bs4 import BeautifulSoup
 from tkinter import *
 from tkinter.ttk import *
@@ -41,6 +41,9 @@ tb_pw = ttk.Entry(win, width=20)
 tb_pw.grid(row=3, column=1)
 
 driver = webdriver.Chrome()
+url = []
+playlist = []
+
 def loginFunc():
     if cb_sch.get() == "인천대학교":
         url = 'https://cyber.inu.ac.kr/login.php'
@@ -56,55 +59,63 @@ def loginFunc():
     driver.find_element_by_css_selector('span.close_notice').click() #안내 창 닫아
 
     html = driver.page_source
-    soup = BeautifulSoup(html)
+    soup = BeautifulSoup(html, 'html.parser')
     crs_name = soup.select('.course-name')
 
     crs_list = []
     for i in crs_name:
         crs_list.append(i.select_one('.course-title').text) #리스트에 과목명 저장
-    print(crs_list)
+   # print(crs_list)
 
+    def combo_save1(event):
+        playlist.append(crs_combo1.get())
+        print(playlist)
+
+    def combo_save2(event):
+        playlist.append(crs_combo2.get())
+        print(playlist)
+
+    def combo_save3(event):
+        playlist.append(crs_combo3.get())
+        print(playlist)
+
+    crs_combo1 = ttk.Combobox(win, value=crs_list)
+    crs_combo1.grid(row=5, column=1)
+    crs_combo1.bind("<<ComboboxSelected>>", combo_save1)
+
+
+    crs_combo2 = ttk.Combobox(win, value=crs_list)
+    crs_combo2.grid(row=6, column=1)
+    crs_combo2.bind("<<ComboboxSelected>>", combo_save2)
+
+    crs_combo3 = ttk.Combobox(win, value=crs_list)
+    crs_combo3.grid(row=7, column=1)
+    crs_combo3.bind("<<ComboboxSelected>>", combo_save3)
+
+
+
+
+    btn_macro = Button(win, text="Macro", command=macroFunc)
+    btn_macro.grid(row=8, column=1)
 
 btn_login = Button(win, text="LOG IN", command=loginFunc)
 btn_login.grid(row=4, column=1)
 
 
 
+def macroFunc():
+    url = driver.current_url
+    #print(url)
+    # html = urllib.request.urlopen(url).read()
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
 
+    title = soup.find_all(class_='course_link')
 
-
-
-
-#
-# # 강의검색
-# lb_lec = Label(win, text=' [ PLAY LIST ]')
-# lb_lec.grid(row=5, column=0)
-#
-# lb_lec1 = Label(win, text=' 1st ')
-# lb_lec1.grid(row=6, column=0)
-#
-# str_lec1 = StringVar()
-# tb_lec1 = ttk.Entry(win, width=20, textvariable=str_lec1)
-# tb_lec1.grid( row = 6, column = 1)
-#
-# lb_lec2 = Label(win, text=' 2nd ')
-# lb_lec2.grid(row=7, column=0)
-#
-# str_lec2 = StringVar()
-# tb_lec2 = ttk.Entry(win, width=20, textvariable=str_lec2)
-# tb_lec2.grid( row = 7, column = 1)
-#
-# lb_lec3 = Label(win, text=' 3rd ')
-# lb_lec3.grid(row=8, column=0)
-#
-# str_lec3 = StringVar()
-# tb_lec3 = ttk.Entry(win, width=20, textvariable=str_lec3)
-# tb_lec3.grid( row = 8, column = 1)
-#
-# btn_play = Button(win, text="PLAY")
-# btn_play.grid(row=9, column=1)
-#
-
+    crs_link = []
+    for i in title:
+        crs_link.append(i.attrs['href'])
+    print(crs_link)
 
 
 
