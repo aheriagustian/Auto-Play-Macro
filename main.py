@@ -7,12 +7,13 @@ from tkinter.ttk import *
 from tkinter import ttk, StringVar
 import re  # 숫자 추출용
 import time  # 현재 시간 추출용
+from datetime import datetime
 
 import time
 
 # gui 창 생성
 win = Tk()
-win.geometry("300x300")  # 크기
+win.geometry("300x330") #크기
 win.title("MAGIC MACRO")
 win.option_add("*Font", "맑은고딕 12")
 
@@ -20,10 +21,10 @@ win.option_add("*Font", "맑은고딕 12")
 lb_school = Label(win, text='학교명')
 lb_school.grid(row=0, column=0)
 
-cb_sch = ttk.Combobox(win, values=["서울대학교", "연세대학교", "인천대학교", "인하대학교"])
+cb_sch = ttk.Combobox(win, values=["서울대학교", "연세대학교", "인천대학교", "인하대학교", "숭실대학교"])
 print(dict(cb_sch))
 cb_sch.grid(row=0, column=1)
-cb_sch.current(3)
+cb_sch.current(2)
 print(cb_sch.current(), cb_sch.get())
 
 # 로그인
@@ -41,38 +42,43 @@ str_pw: StringVar = StringVar()
 tb_pw = ttk.Entry(win, width=20)
 tb_pw.grid(row=3, column=1)
 
+
+
+
+
 driver = webdriver.Chrome()
 url = []
 crs_list = ['x']
 is_login = False
-
-
 def loginFunc(*args):
     if cb_sch.get() == "인천대학교":
         url = 'https://cyber.inu.ac.kr/login.php'
     elif cb_sch.get() == "인하대학교":
         url = 'https://learn.inha.ac.kr/login.php'
+    elif cb_sch.get() == "숭실대학교":
+        url = 'https://myclass.ssu.ac.kr/login.php'
+
     driver.get(url)
     str_id = tb_id.get()
     str_pw = tb_pw.get()
-    driver.find_element_by_css_selector('#input-username').send_keys("12180481")  # str_id
-    driver.find_element_by_css_selector('#input-password').send_keys("01230123bb1!")  # str_pw
+    driver.find_element_by_css_selector('#input-username').send_keys(str_id)  # str_id
+    driver.find_element_by_css_selector('#input-password').send_keys(str_pw)  # str_pw
     driver.find_element_by_css_selector('#input-password').send_keys(Keys.ENTER)
 
-    driver.find_element_by_css_selector('span.close_notice').click()  # 안내 창 닫아
+    driver.find_element_by_css_selector('span.close_notice').click() #안내 창 닫아
 
     html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
     crs_name = soup.select('.course-name')
 
     for i in crs_name:
-        crs_list.append(i.select_one('.course-title').text)  # 리스트에 과목명 저장
+        crs_list.append(i.select_one('.course-title').text) #리스트에 과목명 저장
     print(crs_list)
 
     if driver.current_url != url:
         is_login = True
 
-    global crs_combo1, crs_combo2, crs_combo3
+    global crs_combo1, crs_combo2, crs_combo3, crs_combo4, crs_combo5, crs_combo6, crs_combo7, crs_combo8, crs_combo9
     crs_combo1 = ttk.Combobox(win, value=crs_list)
     crs_combo1.current(0)
     crs_combo1.grid(row=5, column=1)
@@ -86,19 +92,46 @@ def loginFunc(*args):
     crs_combo3.current(0)
     crs_combo3.grid(row=7, column=1)
 
+    crs_combo4 = ttk.Combobox(win, value=crs_list)
+    crs_combo4.current(0)
+    crs_combo4.grid(row=8, column=1)
+
+    crs_combo5 = ttk.Combobox(win, value=crs_list)
+    crs_combo5.current(0)
+    crs_combo5.grid(row=9, column=1)
+
+    crs_combo6 = ttk.Combobox(win, value=crs_list)
+    crs_combo6.current(0)
+    crs_combo6.grid(row=10, column=1)
+
+    crs_combo7 = ttk.Combobox(win, value=crs_list)
+    crs_combo7.current(0)
+    crs_combo7.grid(row=11, column=1)
+
+    crs_combo8 = ttk.Combobox(win, value=crs_list)
+    crs_combo8.current(0)
+    crs_combo8.grid(row=12, column=1)
+
+    crs_combo9 = ttk.Combobox(win, value=crs_list)
+    crs_combo9.current(0)
+    crs_combo9.grid(row=13, column=1)
+
     btn_macro = Button(win, text="Macro", command=macroFunc)
-    btn_macro.grid(row=8, column=1)
+    btn_macro.grid(row=14, column=1)
+
+
+
 
 
 btn_login = Button(win, text="LOG IN", command=loginFunc)
 btn_login.grid(row=4, column=1)
-
 
 def getIdx(combo):
     i = 0
     while combo.current(i) != crs_list[i]:
         i = i + 1
     return i
+
 
 
 def macroFunc():
@@ -115,111 +148,893 @@ def macroFunc():
 
     crs_idx = 0
 
-    # combobox 첫번째
+# combobox 첫번째
     for i in range(len(crs_list)):
         if crs_combo1.get() == crs_list[i]:
             crs_idx = i
             break
 
-    if crs_idx == 0:  # 아무것도 선택 안된 경우 (종료 또는 오류메세지 출력)
+    if crs_idx == 0:    # 아무것도 선택 안된 경우 (종료 또는 오류메세지 출력)
         print("========종료============")
+    else:
+        # 선택된 강의 url 불러오기
+        url = crs_link[crs_idx-1]
+        driver.get(url)
 
-    # 선택된 강의 url 불러오기
-    url = crs_link[crs_idx - 1]
-    driver.get(url)
+        # 크롤링 요소
+        html_crs = driver.page_source
+        soup_crs = BeautifulSoup(html_crs, 'html.parser')
+        crs_class = soup_crs.find_all(class_='activity vod modtype_vod')
 
-    # 크롤링 요소
-    html_crs = driver.page_source
-    soup_crs = BeautifulSoup(html_crs, 'html.parser')
-    crs_class = soup_crs.find_all(class_='activity vod modtype_vod')
+        # 출석 인정 날짜 추출
 
-    # 출석 인정 날짜 추출
-    crs_date = []
-    for i in crs_class:
-        s_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[:6])
-        f_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[6:])
-        crs_date.append(s_date)
-        crs_date.append(f_date)
+        crs_date = []
+        for i in crs_class:
+            s_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[:6])
+            f_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[6:])
+            crs_date.append(s_date)
+            crs_date.append(f_date)
 
-    # 현재 시간 가져오기
-    now = time.localtime()
-    n_date = str(now.tm_year) + str(now.tm_mon) + str(now.tm_mday) + str(now.tm_hour) + str(now.tm_min) + str(
-        now.tm_sec)
+        # 현재 시간 가져오기
+        n_date = datetime.today().strftime("%Y%m%d%H%M%S")
 
-    # 비디오 링크 크롤링
-    soup_crs_video = BeautifulSoup(html_crs, 'html.parser')
-    crs_video_class = soup_crs_video.find_all('a')
+        # 비디오 링크 크롤링
+        soup_crs_video = BeautifulSoup(html_crs, 'html.parser')
+        crs_video_class = soup_crs_video.find_all('a')
 
-    # 비디오 링크 추출
-    temp = []
-    for i in crs_video_class:
-        temp.append(i.get('href'))
-    print(temp)
-    video_link = []
-    for i in range(len(temp)):
-        if re.findall("vod", str(temp[i])) != []:
-            video_link.append(temp[i])
-    video_link = video_link[1:]  # 제일 처음에 동영상이 아닌 링크가 섞여 있음 (해결해야함)
-    print(video_link)
+        # 비디오 링크 추출
+        temp = []
+        for i in crs_video_class:
+            temp.append(i.get('href'))
+        video_link = []
+        for i in range(len(temp)):
+            if re.findall("vod", str(temp[i])) != []:
+                video_link.append(temp[i])
+        video_link = video_link[1:]  # 제일 처음에 동영상이 아닌 링크가 섞여 있음 (해결해야함)
 
-    # 출석 인정 시간과 비교하여 실행행
-    for i in range(len(crs_date) // 2):
-        s_date_idx = 2 * i
-        f_date_idx = 2 * i + 1
-        if i == 3:  # int(crs_date[s_date_idx]) <= int(n_date) and int(n_date) <= int(crs_date[f_date_idx]):  ==> 지금 출석처리 기간인 영상이 없음
-            url = video_link[i]
-            driver.execute_script('window.open("");')
+        # # 출석 창 열기
+        # driver.execute_script('window.open("");')
+        # attend_url = soup_crs.find(class_='submenu-progress').get('href')
+        # print(attend_url)
+        # driver.switch_to.window(driver.window_handles[1])
+        # driver.get(attend_url)
+        #
+        # html_attend = driver.page_source
+        # soup_attend = BeautifulSoup(html_attend, 'html.parser')
+        # attend_class = soup_attend.find_all(class_="text-center")  # .table-bordered user_progress_table
+        # print(attend_class)
+        # attend = []
+        # for i in attend_class:
+        #     attend.append(i.find(class_='text-center').text)
+        #     # print(attend)
+        # print(attend)
 
-            driver.switch_to_window(driver.window_handles[1])
-            driver.get(url)
+        # 출석 인정 시간과 비교하여 실행행
+        for i in range(len(crs_date)//2):
+            s_date_idx = 2*i
+            f_date_idx = 2*i + 1
+            if int(crs_date[s_date_idx]) <= int(n_date) and int(n_date) <= int(crs_date[f_date_idx]):  # ==> 지금 출석처리 기간인 영상이 없음 ==> 나중에 not 빼줘야함
+                # 이미 출석 처리 된 강의 제외하는 부분 추가해야함
+                url = video_link[i]
+                driver.execute_script('window.open("");')
 
-            html_video = driver.page_source
-            soup_video = BeautifulSoup(html_video, 'html.parser')
-            class_video = soup_video.find(class_='btn btn-primary btn-lg btn-block')
-            url = class_video.get('href')
+                driver.switch_to.window(driver.window_handles[1])
+                driver.get(url)
 
-            driver.get(url)
-            driver.find_element_by_css_selector('.vjs-big-play-button').click()
+                html_video = driver.page_source
+                soup_video = BeautifulSoup(html_video, 'html.parser')
+                class_video = soup_video.find(class_='btn btn-primary btn-lg btn-block')
+                url = class_video.get('href')
 
-            html_video_time = driver.page_source
-            soup_video_time = BeautifulSoup(html_video_time, 'html.parser')
-            remaining_time = soup_video_time.find(class_='vjs-remaining-time-display').text
+                driver.get(url)
+                driver.find_element_by_css_selector('.vjs-big-play-button').click()
 
-            # 위에서 받아온 시간만큼 기다리기
-            # time.sleep(int(remaining_time))
+                html_video_time = driver.page_source
+                soup_video_time = BeautifulSoup(html_video_time, 'html.parser')
+                remaining_time = re.findall("\d+", soup_video_time.find(class_='vjs-remaining-time-display').text)
 
+                # 남은 시간 초로 변환
+                while len(remaining_time) != 1:
+                    i = 0
+                    remaining_time[i+1] = int(remaining_time[i+1]) + int(remaining_time[i])*60
+                    del remaining_time[i]
+                remaining_sec = remaining_time[0]  # int형으로 변환
 
-#
-# # 강의검색
-# lb_lec = Label(win, text=' [ PLAY LIST ]')
-# lb_lec.grid(row=5, column=0)
-#
-# lb_lec1 = Label(win, text=' 1st ')
-# lb_lec1.grid(row=6, column=0)
-#
-# str_lec1 = StringVar()
-# tb_lec1 = ttk.Entry(win, width=20, textvariable=str_lec1)
-# tb_lec1.grid( row = 6, column = 1)
-#
-# lb_lec2 = Label(win, text=' 2nd ')
-# lb_lec2.grid(row=7, column=0)
-#
-# str_lec2 = StringVar()
-# tb_lec2 = ttk.Entry(win, width=20, textvariable=str_lec2)
-# tb_lec2.grid( row = 7, column = 1)
-#
-# lb_lec3 = Label(win, text=' 3rd ')
-# lb_lec3.grid(row=8, column=0)
-#
-# str_lec3 = StringVar()
-# tb_lec3 = ttk.Entry(win, width=20, textvariable=str_lec3)
-# tb_lec3.grid( row = 8, column = 1)
-#
-# btn_play = Button(win, text="PLAY")
-# btn_play.grid(row=9, column=1)
-#
+                # 위에서 받아온 시간만큼 기다리기
+                time.sleep(remaining_sec + 60)  # time.sleep(1) # 확인하기에 너무 길어서 10초로 설정
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
 
 
-win.mainloop()  # 창 실행
 
-# div class = "progress_courses"
+# combobox 두번째
+    for i in range(len(crs_list)):
+        if crs_combo2.get() == crs_list[i]:
+            crs_idx = i
+            break
+
+    if crs_idx == 0:    # 아무것도 선택 안된 경우 (종료 또는 오류메세지 출력)
+        print("========종료============")
+    else:
+        # 선택된 강의 url 불러오기
+        url = crs_link[crs_idx-1]
+        driver.get(url)
+
+        # 크롤링 요소
+        html_crs = driver.page_source
+        soup_crs = BeautifulSoup(html_crs, 'html.parser')
+        crs_class = soup_crs.find_all(class_='activity vod modtype_vod')
+
+        # 출석 인정 날짜 추출
+        crs_date = []
+        for i in crs_class:
+            s_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[:6])
+            f_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[6:])
+            crs_date.append(s_date)
+            crs_date.append(f_date)
+
+        # 현재 시간 가져오기
+        n_date = datetime.today().strftime("%Y%m%d%H%M%S")
+
+        # 비디오 링크 크롤링
+        soup_crs_video = BeautifulSoup(html_crs, 'html.parser')
+        crs_video_class = soup_crs_video.find_all('a')
+
+        # 비디오 링크 추출
+        temp = []
+        for i in crs_video_class:
+            temp.append(i.get('href'))
+        video_link = []
+        for i in range(len(temp)):
+            if re.findall("vod", str(temp[i])) != []:
+                video_link.append(temp[i])
+        video_link = video_link[1:]  # 제일 처음에 동영상이 아닌 링크가 섞여 있음 (해결해야함)
+
+        # # 출석 창 열기
+        # driver.execute_script('window.open("");')
+        # attend_url = soup_crs.find(class_='submenu-progress').get('href')
+        # print(attend_url)
+        # driver.switch_to.window(driver.window_handles[1])
+        # driver.get(attend_url)
+        #
+        # html_attend = driver.page_source
+        # soup_attend = BeautifulSoup(html_attend, 'html.parser')
+        # attend_class = soup_attend.find_all(class_="text-center")  # .table-bordered user_progress_table
+        # print(attend_class)
+        # attend = []
+        # for i in attend_class:
+        #     attend.append(i.find(class_='text-center').text)
+        #     # print(attend)
+        # print(attend)
+
+        # 출석 인정 시간과 비교하여 실행행
+        for i in range(len(crs_date)//2):
+            s_date_idx = 2*i
+            f_date_idx = 2*i + 1
+            if int(crs_date[s_date_idx]) <= int(n_date) and int(n_date) <= int(crs_date[f_date_idx]):  # ==> 지금 출석처리 기간인 영상이 없음 ==> 나중에 not 빼줘야함
+                # 이미 출석 처리 된 강의 제외하는 부분 추가해야함
+                url = video_link[i]
+                driver.execute_script('window.open("");')
+
+                driver.switch_to.window(driver.window_handles[1])
+                driver.get(url)
+
+                html_video = driver.page_source
+                soup_video = BeautifulSoup(html_video, 'html.parser')
+                class_video = soup_video.find(class_='btn btn-primary btn-lg btn-block')
+                url = class_video.get('href')
+
+                driver.get(url)
+                driver.find_element_by_css_selector('.vjs-big-play-button').click()
+
+                html_video_time = driver.page_source
+                soup_video_time = BeautifulSoup(html_video_time, 'html.parser')
+                remaining_time = re.findall("\d+", soup_video_time.find(class_='vjs-remaining-time-display').text)
+
+                # 남은 시간 초로 변환
+                while len(remaining_time) != 1:
+                    i = 0
+                    remaining_time[i+1] = int(remaining_time[i+1]) + int(remaining_time[i])*60
+                    del remaining_time[i]
+                remaining_sec = remaining_time[0]  # int형으로 변환
+
+                # 위에서 받아온 시간만큼 기다리기
+                time.sleep(remaining_sec + 60)# time.sleep(1) # 확인하기에 너무 길어서 10초로 설정
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+
+
+# combobox 첫번째
+    for i in range(len(crs_list)):
+        if crs_combo3.get() == crs_list[i]:
+            crs_idx = i
+            break
+
+    if crs_idx == 0:    # 아무것도 선택 안된 경우 (종료 또는 오류메세지 출력)
+        print("========종료============")
+    else:
+        # 선택된 강의 url 불러오기
+        url = crs_link[crs_idx-1]
+        driver.get(url)
+
+        # 크롤링 요소
+        html_crs = driver.page_source
+        soup_crs = BeautifulSoup(html_crs, 'html.parser')
+        crs_class = soup_crs.find_all(class_='activity vod modtype_vod')
+
+        # 출석 인정 날짜 추출
+        crs_date = []
+        for i in crs_class:
+            s_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[:6])
+            f_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[6:])
+            crs_date.append(s_date)
+            crs_date.append(f_date)
+
+        # 현재 시간 가져오기
+        n_date = datetime.today().strftime("%Y%m%d%H%M%S")
+
+        # 비디오 링크 크롤링
+        soup_crs_video = BeautifulSoup(html_crs, 'html.parser')
+        crs_video_class = soup_crs_video.find_all('a')
+
+        # 비디오 링크 추출
+        temp = []
+        for i in crs_video_class:
+            temp.append(i.get('href'))
+        video_link = []
+        for i in range(len(temp)):
+            if re.findall("vod", str(temp[i])) != []:
+                video_link.append(temp[i])
+        video_link = video_link[1:]  # 제일 처음에 동영상이 아닌 링크가 섞여 있음 (해결해야함)
+
+        # # 출석 창 열기
+        # driver.execute_script('window.open("");')
+        # attend_url = soup_crs.find(class_='submenu-progress').get('href')
+        # print(attend_url)
+        # driver.switch_to.window(driver.window_handles[1])
+        # driver.get(attend_url)
+        #
+        # html_attend = driver.page_source
+        # soup_attend = BeautifulSoup(html_attend, 'html.parser')
+        # attend_class = soup_attend.find_all(class_="text-center")  # .table-bordered user_progress_table
+        # print(attend_class)
+        # attend = []
+        # for i in attend_class:
+        #     attend.append(i.find(class_='text-center').text)
+        #     # print(attend)
+        # print(attend)
+
+        # 출석 인정 시간과 비교하여 실행행
+        for i in range(len(crs_date)//2):
+            s_date_idx = 2*i
+            f_date_idx = 2*i + 1
+            if int(crs_date[s_date_idx]) <= int(n_date) and int(n_date) <= int(crs_date[f_date_idx]):  # ==> 지금 출석처리 기간인 영상이 없음 ==> 나중에 not 빼줘야함
+                # 이미 출석 처리 된 강의 제외하는 부분 추가해야함
+                url = video_link[i]
+                driver.execute_script('window.open("");')
+
+                driver.switch_to.window(driver.window_handles[1])
+                driver.get(url)
+
+                html_video = driver.page_source
+                soup_video = BeautifulSoup(html_video, 'html.parser')
+                class_video = soup_video.find(class_='btn btn-primary btn-lg btn-block')
+                url = class_video.get('href')
+
+                driver.get(url)
+                driver.find_element_by_css_selector('.vjs-big-play-button').click()
+
+                html_video_time = driver.page_source
+                soup_video_time = BeautifulSoup(html_video_time, 'html.parser')
+                remaining_time = re.findall("\d+", soup_video_time.find(class_='vjs-remaining-time-display').text)
+
+                # 남은 시간 초로 변환
+                while len(remaining_time) != 1:
+                    i = 0
+                    remaining_time[i+1] = int(remaining_time[i+1]) + int(remaining_time[i])*60
+                    del remaining_time[i]
+                remaining_sec = remaining_time[0]  # int형으로 변환
+
+                # 위에서 받아온 시간만큼 기다리기
+                time.sleep(remaining_sec + 60)  # time.sleep(1) # 확인하기에 너무 길어서 10초로 설정
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+
+
+
+# combobox 첫번째
+    for i in range(len(crs_list)):
+        if crs_combo4.get() == crs_list[i]:
+            crs_idx = i
+            break
+
+    if crs_idx == 0:    # 아무것도 선택 안된 경우 (종료 또는 오류메세지 출력)
+        print("========종료============")
+    else:
+        # 선택된 강의 url 불러오기
+        url = crs_link[crs_idx-1]
+        driver.get(url)
+
+        # 크롤링 요소
+        html_crs = driver.page_source
+        soup_crs = BeautifulSoup(html_crs, 'html.parser')
+        crs_class = soup_crs.find_all(class_='activity vod modtype_vod')
+
+        # 출석 인정 날짜 추출
+        crs_date = []
+        for i in crs_class:
+            s_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[:6])
+            f_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[6:])
+            crs_date.append(s_date)
+            crs_date.append(f_date)
+
+        # 현재 시간 가져오기
+        n_date = datetime.today().strftime("%Y%m%d%H%M%S")
+
+        # 비디오 링크 크롤링
+        soup_crs_video = BeautifulSoup(html_crs, 'html.parser')
+        crs_video_class = soup_crs_video.find_all('a')
+
+        # 비디오 링크 추출
+        temp = []
+        for i in crs_video_class:
+            temp.append(i.get('href'))
+        video_link = []
+        for i in range(len(temp)):
+            if re.findall("vod", str(temp[i])) != []:
+                video_link.append(temp[i])
+        video_link = video_link[1:]  # 제일 처음에 동영상이 아닌 링크가 섞여 있음 (해결해야함)
+
+        # # 출석 창 열기
+        # driver.execute_script('window.open("");')
+        # attend_url = soup_crs.find(class_='submenu-progress').get('href')
+        # print(attend_url)
+        # driver.switch_to.window(driver.window_handles[1])
+        # driver.get(attend_url)
+        #
+        # html_attend = driver.page_source
+        # soup_attend = BeautifulSoup(html_attend, 'html.parser')
+        # attend_class = soup_attend.find_all(class_="text-center")  # .table-bordered user_progress_table
+        # print(attend_class)
+        # attend = []
+        # for i in attend_class:
+        #     attend.append(i.find(class_='text-center').text)
+        #     # print(attend)
+        # print(attend)
+
+        # 출석 인정 시간과 비교하여 실행행
+        for i in range(len(crs_date)//2):
+            s_date_idx = 2*i
+            f_date_idx = 2*i + 1
+            if int(crs_date[s_date_idx]) <= int(n_date) and int(n_date) <= int(crs_date[f_date_idx]):  # ==> 지금 출석처리 기간인 영상이 없음 ==> 나중에 not 빼줘야함
+                # 이미 출석 처리 된 강의 제외하는 부분 추가해야함
+                url = video_link[i]
+                driver.execute_script('window.open("");')
+
+                driver.switch_to.window(driver.window_handles[1])
+                driver.get(url)
+
+                html_video = driver.page_source
+                soup_video = BeautifulSoup(html_video, 'html.parser')
+                class_video = soup_video.find(class_='btn btn-primary btn-lg btn-block')
+                url = class_video.get('href')
+
+                driver.get(url)
+                driver.find_element_by_css_selector('.vjs-big-play-button').click()
+
+                html_video_time = driver.page_source
+                soup_video_time = BeautifulSoup(html_video_time, 'html.parser')
+                remaining_time = re.findall("\d+", soup_video_time.find(class_='vjs-remaining-time-display').text)
+
+                # 남은 시간 초로 변환
+                while len(remaining_time) != 1:
+                    i = 0
+                    remaining_time[i+1] = int(remaining_time[i+1]) + int(remaining_time[i])*60
+                    del remaining_time[i]
+                remaining_sec = remaining_time[0]  # int형으로 변환
+
+                # 위에서 받아온 시간만큼 기다리기
+                time.sleep(remaining_sec + 60)  # time.sleep(1) # 확인하기에 너무 길어서 10초로 설정
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+
+
+
+# combobox 첫번째
+    for i in range(len(crs_list)):
+        if crs_combo5.get() == crs_list[i]:
+            crs_idx = i
+            break
+
+    if crs_idx == 0:    # 아무것도 선택 안된 경우 (종료 또는 오류메세지 출력)
+        print("========종료============")
+    else:
+        # 선택된 강의 url 불러오기
+        url = crs_link[crs_idx-1]
+        driver.get(url)
+
+        # 크롤링 요소
+        html_crs = driver.page_source
+        soup_crs = BeautifulSoup(html_crs, 'html.parser')
+        crs_class = soup_crs.find_all(class_='activity vod modtype_vod')
+
+        # 출석 인정 날짜 추출
+        crs_date = []
+        for i in crs_class:
+            s_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[:6])
+            f_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[6:])
+            crs_date.append(s_date)
+            crs_date.append(f_date)
+
+        # 현재 시간 가져오기
+        n_date = datetime.today().strftime("%Y%m%d%H%M%S")
+
+        # 비디오 링크 크롤링
+        soup_crs_video = BeautifulSoup(html_crs, 'html.parser')
+        crs_video_class = soup_crs_video.find_all('a')
+
+        # 비디오 링크 추출
+        temp = []
+        for i in crs_video_class:
+            temp.append(i.get('href'))
+        video_link = []
+        for i in range(len(temp)):
+            if re.findall("vod", str(temp[i])) != []:
+                video_link.append(temp[i])
+        video_link = video_link[1:]  # 제일 처음에 동영상이 아닌 링크가 섞여 있음 (해결해야함)
+
+        # # 출석 창 열기
+        # driver.execute_script('window.open("");')
+        # attend_url = soup_crs.find(class_='submenu-progress').get('href')
+        # print(attend_url)
+        # driver.switch_to.window(driver.window_handles[1])
+        # driver.get(attend_url)
+        #
+        # html_attend = driver.page_source
+        # soup_attend = BeautifulSoup(html_attend, 'html.parser')
+        # attend_class = soup_attend.find_all(class_="text-center")  # .table-bordered user_progress_table
+        # print(attend_class)
+        # attend = []
+        # for i in attend_class:
+        #     attend.append(i.find(class_='text-center').text)
+        #     # print(attend)
+        # print(attend)
+
+        # 출석 인정 시간과 비교하여 실행행
+        for i in range(len(crs_date)//2):
+            s_date_idx = 2*i
+            f_date_idx = 2*i + 1
+            if int(crs_date[s_date_idx]) <= int(n_date) and int(n_date) <= int(crs_date[f_date_idx]):  # ==> 지금 출석처리 기간인 영상이 없음 ==> 나중에 not 빼줘야함
+                # 이미 출석 처리 된 강의 제외하는 부분 추가해야함
+                url = video_link[i]
+                driver.execute_script('window.open("");')
+
+                driver.switch_to.window(driver.window_handles[1])
+                driver.get(url)
+
+                html_video = driver.page_source
+                soup_video = BeautifulSoup(html_video, 'html.parser')
+                class_video = soup_video.find(class_='btn btn-primary btn-lg btn-block')
+                url = class_video.get('href')
+
+                driver.get(url)
+                driver.find_element_by_css_selector('.vjs-big-play-button').click()
+
+                html_video_time = driver.page_source
+                soup_video_time = BeautifulSoup(html_video_time, 'html.parser')
+                remaining_time = re.findall("\d+", soup_video_time.find(class_='vjs-remaining-time-display').text)
+
+                # 남은 시간 초로 변환
+                while len(remaining_time) != 1:
+                    i = 0
+                    remaining_time[i+1] = int(remaining_time[i+1]) + int(remaining_time[i])*60
+                    del remaining_time[i]
+                remaining_sec = remaining_time[0]  # int형으로 변환
+
+                # 위에서 받아온 시간만큼 기다리기
+                time.sleep(remaining_sec + 60)  # time.sleep(1) # 확인하기에 너무 길어서 10초로 설정
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+
+
+
+# combobox 첫번째
+    for i in range(len(crs_list)):
+        if crs_combo6.get() == crs_list[i]:
+            crs_idx = i
+            break
+
+    if crs_idx == 0:    # 아무것도 선택 안된 경우 (종료 또는 오류메세지 출력)
+        print("========종료============")
+    else:
+        # 선택된 강의 url 불러오기
+        url = crs_link[crs_idx-1]
+        driver.get(url)
+
+        # 크롤링 요소
+        html_crs = driver.page_source
+        soup_crs = BeautifulSoup(html_crs, 'html.parser')
+        crs_class = soup_crs.find_all(class_='activity vod modtype_vod')
+
+        # 출석 인정 날짜 추출
+        crs_date = []
+        for i in crs_class:
+            s_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[:6])
+            f_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[6:])
+            crs_date.append(s_date)
+            crs_date.append(f_date)
+
+        # 현재 시간 가져오기
+        n_date = datetime.today().strftime("%Y%m%d%H%M%S")
+
+        # 비디오 링크 크롤링
+        soup_crs_video = BeautifulSoup(html_crs, 'html.parser')
+        crs_video_class = soup_crs_video.find_all('a')
+
+        # 비디오 링크 추출
+        temp = []
+        for i in crs_video_class:
+            temp.append(i.get('href'))
+        video_link = []
+        for i in range(len(temp)):
+            if re.findall("vod", str(temp[i])) != []:
+                video_link.append(temp[i])
+        video_link = video_link[1:]  # 제일 처음에 동영상이 아닌 링크가 섞여 있음 (해결해야함)
+
+        # # 출석 창 열기
+        # driver.execute_script('window.open("");')
+        # attend_url = soup_crs.find(class_='submenu-progress').get('href')
+        # print(attend_url)
+        # driver.switch_to.window(driver.window_handles[1])
+        # driver.get(attend_url)
+        #
+        # html_attend = driver.page_source
+        # soup_attend = BeautifulSoup(html_attend, 'html.parser')
+        # attend_class = soup_attend.find_all(class_="text-center")  # .table-bordered user_progress_table
+        # print(attend_class)
+        # attend = []
+        # for i in attend_class:
+        #     attend.append(i.find(class_='text-center').text)
+        #     # print(attend)
+        # print(attend)
+
+        # 출석 인정 시간과 비교하여 실행행
+        for i in range(len(crs_date)//2):
+            s_date_idx = 2*i
+            f_date_idx = 2*i + 1
+            if int(crs_date[s_date_idx]) <= int(n_date) and int(n_date) <= int(crs_date[f_date_idx]):  # ==> 지금 출석처리 기간인 영상이 없음 ==> 나중에 not 빼줘야함
+                # 이미 출석 처리 된 강의 제외하는 부분 추가해야함
+                url = video_link[i]
+                driver.execute_script('window.open("");')
+
+                driver.switch_to.window(driver.window_handles[1])
+                driver.get(url)
+
+                html_video = driver.page_source
+                soup_video = BeautifulSoup(html_video, 'html.parser')
+                class_video = soup_video.find(class_='btn btn-primary btn-lg btn-block')
+                url = class_video.get('href')
+
+                driver.get(url)
+                driver.find_element_by_css_selector('.vjs-big-play-button').click()
+
+                html_video_time = driver.page_source
+                soup_video_time = BeautifulSoup(html_video_time, 'html.parser')
+                remaining_time = re.findall("\d+", soup_video_time.find(class_='vjs-remaining-time-display').text)
+
+                # 남은 시간 초로 변환
+                while len(remaining_time) != 1:
+                    i = 0
+                    remaining_time[i+1] = int(remaining_time[i+1]) + int(remaining_time[i])*60
+                    del remaining_time[i]
+                remaining_sec = remaining_time[0]  # int형으로 변환
+
+                # 위에서 받아온 시간만큼 기다리기
+                time.sleep(remaining_sec + 60)  # time.sleep(1) # 확인하기에 너무 길어서 10초로 설정
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+
+
+
+# combobox 첫번째
+    for i in range(len(crs_list)):
+        if crs_combo7.get() == crs_list[i]:
+            crs_idx = i
+            break
+
+    if crs_idx == 0:    # 아무것도 선택 안된 경우 (종료 또는 오류메세지 출력)
+        print("========종료============")
+    else:
+        # 선택된 강의 url 불러오기
+        url = crs_link[crs_idx-1]
+        driver.get(url)
+
+        # 크롤링 요소
+        html_crs = driver.page_source
+        soup_crs = BeautifulSoup(html_crs, 'html.parser')
+        crs_class = soup_crs.find_all(class_='activity vod modtype_vod')
+
+        # 출석 인정 날짜 추출
+        crs_date = []
+        for i in crs_class:
+            s_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[:6])
+            f_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[6:])
+            crs_date.append(s_date)
+            crs_date.append(f_date)
+
+        # 현재 시간 가져오기
+        n_date = datetime.today().strftime("%Y%m%d%H%M%S")
+
+        # 비디오 링크 크롤링
+        soup_crs_video = BeautifulSoup(html_crs, 'html.parser')
+        crs_video_class = soup_crs_video.find_all('a')
+
+        # 비디오 링크 추출
+        temp = []
+        for i in crs_video_class:
+            temp.append(i.get('href'))
+        video_link = []
+        for i in range(len(temp)):
+            if re.findall("vod", str(temp[i])) != []:
+                video_link.append(temp[i])
+        video_link = video_link[1:]  # 제일 처음에 동영상이 아닌 링크가 섞여 있음 (해결해야함)
+
+        # # 출석 창 열기
+        # driver.execute_script('window.open("");')
+        # attend_url = soup_crs.find(class_='submenu-progress').get('href')
+        # print(attend_url)
+        # driver.switch_to.window(driver.window_handles[1])
+        # driver.get(attend_url)
+        #
+        # html_attend = driver.page_source
+        # soup_attend = BeautifulSoup(html_attend, 'html.parser')
+        # attend_class = soup_attend.find_all(class_="text-center")  # .table-bordered user_progress_table
+        # print(attend_class)
+        # attend = []
+        # for i in attend_class:
+        #     attend.append(i.find(class_='text-center').text)
+        #     # print(attend)
+        # print(attend)
+
+        # 출석 인정 시간과 비교하여 실행행
+        for i in range(len(crs_date)//2):
+            s_date_idx = 2*i
+            f_date_idx = 2*i + 1
+            if int(crs_date[s_date_idx]) <= int(n_date) and int(n_date) <= int(crs_date[f_date_idx]):  # ==> 지금 출석처리 기간인 영상이 없음 ==> 나중에 not 빼줘야함
+                # 이미 출석 처리 된 강의 제외하는 부분 추가해야함
+                url = video_link[i]
+                driver.execute_script('window.open("");')
+
+                driver.switch_to.window(driver.window_handles[1])
+                driver.get(url)
+
+                html_video = driver.page_source
+                soup_video = BeautifulSoup(html_video, 'html.parser')
+                class_video = soup_video.find(class_='btn btn-primary btn-lg btn-block')
+                url = class_video.get('href')
+
+                driver.get(url)
+                driver.find_element_by_css_selector('.vjs-big-play-button').click()
+
+                html_video_time = driver.page_source
+                soup_video_time = BeautifulSoup(html_video_time, 'html.parser')
+                remaining_time = re.findall("\d+", soup_video_time.find(class_='vjs-remaining-time-display').text)
+
+                # 남은 시간 초로 변환
+                while len(remaining_time) != 1:
+                    i = 0
+                    remaining_time[i+1] = int(remaining_time[i+1]) + int(remaining_time[i])*60
+                    del remaining_time[i]
+                remaining_sec = remaining_time[0]  # int형으로 변환
+
+                # 위에서 받아온 시간만큼 기다리기
+                time.sleep(remaining_sec + 60)  # time.sleep(1) # 확인하기에 너무 길어서 10초로 설정
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+
+
+# combobox 첫번째
+    for i in range(len(crs_list)):
+        if crs_combo8.get() == crs_list[i]:
+            crs_idx = i
+            break
+
+    if crs_idx == 0:    # 아무것도 선택 안된 경우 (종료 또는 오류메세지 출력)
+        print("========종료============")
+    else:
+        # 선택된 강의 url 불러오기
+        url = crs_link[crs_idx-1]
+        driver.get(url)
+
+        # 크롤링 요소
+        html_crs = driver.page_source
+        soup_crs = BeautifulSoup(html_crs, 'html.parser')
+        crs_class = soup_crs.find_all(class_='activity vod modtype_vod')
+
+        # 출석 인정 날짜 추출
+        crs_date = []
+        for i in crs_class:
+            s_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[:6])
+            f_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[6:])
+            crs_date.append(s_date)
+            crs_date.append(f_date)
+
+        # 현재 시간 가져오기
+        n_date = datetime.today().strftime("%Y%m%d%H%M%S")
+
+        # 비디오 링크 크롤링
+        soup_crs_video = BeautifulSoup(html_crs, 'html.parser')
+        crs_video_class = soup_crs_video.find_all('a')
+
+        # 비디오 링크 추출
+        temp = []
+        for i in crs_video_class:
+            temp.append(i.get('href'))
+        video_link = []
+        for i in range(len(temp)):
+            if re.findall("vod", str(temp[i])) != []:
+                video_link.append(temp[i])
+        video_link = video_link[1:]  # 제일 처음에 동영상이 아닌 링크가 섞여 있음 (해결해야함)
+
+        # # 출석 창 열기
+        # driver.execute_script('window.open("");')
+        # attend_url = soup_crs.find(class_='submenu-progress').get('href')
+        # print(attend_url)
+        # driver.switch_to.window(driver.window_handles[1])
+        # driver.get(attend_url)
+        #
+        # html_attend = driver.page_source
+        # soup_attend = BeautifulSoup(html_attend, 'html.parser')
+        # attend_class = soup_attend.find_all(class_="text-center")  # .table-bordered user_progress_table
+        # print(attend_class)
+        # attend = []
+        # for i in attend_class:
+        #     attend.append(i.find(class_='text-center').text)
+        #     # print(attend)
+        # print(attend)
+
+        # 출석 인정 시간과 비교하여 실행행
+        for i in range(len(crs_date)//2):
+            s_date_idx = 2*i
+            f_date_idx = 2*i + 1
+            if int(crs_date[s_date_idx]) <= int(n_date) and int(n_date) <= int(crs_date[f_date_idx]):  # ==> 지금 출석처리 기간인 영상이 없음 ==> 나중에 not 빼줘야함
+                # 이미 출석 처리 된 강의 제외하는 부분 추가해야함
+                url = video_link[i]
+                driver.execute_script('window.open("");')
+
+                driver.switch_to.window(driver.window_handles[1])
+                driver.get(url)
+
+                html_video = driver.page_source
+                soup_video = BeautifulSoup(html_video, 'html.parser')
+                class_video = soup_video.find(class_='btn btn-primary btn-lg btn-block')
+                url = class_video.get('href')
+
+                driver.get(url)
+                driver.find_element_by_css_selector('.vjs-big-play-button').click()
+
+                html_video_time = driver.page_source
+                soup_video_time = BeautifulSoup(html_video_time, 'html.parser')
+                remaining_time = re.findall("\d+", soup_video_time.find(class_='vjs-remaining-time-display').text)
+
+                # 남은 시간 초로 변환
+                while len(remaining_time) != 1:
+                    i = 0
+                    remaining_time[i+1] = int(remaining_time[i+1]) + int(remaining_time[i])*60
+                    del remaining_time[i]
+                remaining_sec = remaining_time[0]  # int형으로 변환
+
+                # 위에서 받아온 시간만큼 기다리기
+                time.sleep(remaining_sec + 60)  # time.sleep(1) # 확인하기에 너무 길어서 10초로 설정
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+
+
+
+# combobox 첫번째
+    for i in range(len(crs_list)):
+        if crs_combo9.get() == crs_list[i]:
+            crs_idx = i
+            break
+
+    if crs_idx == 0:    # 아무것도 선택 안된 경우 (종료 또는 오류메세지 출력)
+        print("========종료============")
+    else:
+        # 선택된 강의 url 불러오기
+        url = crs_link[crs_idx-1]
+        driver.get(url)
+
+        # 크롤링 요소
+        html_crs = driver.page_source
+        soup_crs = BeautifulSoup(html_crs, 'html.parser')
+        crs_class = soup_crs.find_all(class_='activity vod modtype_vod')
+
+        # 출석 인정 날짜 추출
+        crs_date = []
+        for i in crs_class:
+            s_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[:6])
+            f_date = "".join(re.findall("\d+", i.select_one('.text-ubstrap').text)[6:])
+            crs_date.append(s_date)
+            crs_date.append(f_date)
+
+        # 현재 시간 가져오기
+        n_date = datetime.today().strftime("%Y%m%d%H%M%S")
+
+        # 비디오 링크 크롤링
+        soup_crs_video = BeautifulSoup(html_crs, 'html.parser')
+        crs_video_class = soup_crs_video.find_all('a')
+
+        # 비디오 링크 추출
+        temp = []
+        for i in crs_video_class:
+            temp.append(i.get('href'))
+        video_link = []
+        for i in range(len(temp)):
+            if re.findall("vod", str(temp[i])) != []:
+                video_link.append(temp[i])
+        video_link = video_link[1:]  # 제일 처음에 동영상이 아닌 링크가 섞여 있음 (해결해야함)
+
+        # # 출석 창 열기
+        # driver.execute_script('window.open("");')
+        # attend_url = soup_crs.find(class_='submenu-progress').get('href')
+        # print(attend_url)
+        # driver.switch_to.window(driver.window_handles[1])
+        # driver.get(attend_url)
+        #
+        # html_attend = driver.page_source
+        # soup_attend = BeautifulSoup(html_attend, 'html.parser')
+        # attend_class = soup_attend.find_all(class_="text-center")  # .table-bordered user_progress_table
+        # print(attend_class)
+        # attend = []
+        # for i in attend_class:
+        #     attend.append(i.find(class_='text-center').text)
+        #     # print(attend)
+        # print(attend)
+
+        # 출석 인정 시간과 비교하여 실행행
+        for i in range(len(crs_date)//2):
+            s_date_idx = 2*i
+            f_date_idx = 2*i + 1
+            if int(crs_date[s_date_idx]) <= int(n_date) and int(n_date) <= int(crs_date[f_date_idx]):  # ==> 지금 출석처리 기간인 영상이 없음 ==> 나중에 not 빼줘야함
+                # 이미 출석 처리 된 강의 제외하는 부분 추가해야함
+                url = video_link[i]
+                driver.execute_script('window.open("");')
+
+                driver.switch_to.window(driver.window_handles[1])
+                driver.get(url)
+
+                html_video = driver.page_source
+                soup_video = BeautifulSoup(html_video, 'html.parser')
+                class_video = soup_video.find(class_='btn btn-primary btn-lg btn-block')
+                url = class_video.get('href')
+
+                driver.get(url)
+                driver.find_element_by_css_selector('.vjs-big-play-button').click()
+
+                html_video_time = driver.page_source
+                soup_video_time = BeautifulSoup(html_video_time, 'html.parser')
+                remaining_time = re.findall("\d+", soup_video_time.find(class_='vjs-remaining-time-display').text)
+
+                # 남은 시간 초로 변환
+                while len(remaining_time) != 1:
+                    i = 0
+                    remaining_time[i+1] = int(remaining_time[i+1]) + int(remaining_time[i])*60
+                    del remaining_time[i]
+                remaining_sec = remaining_time[0]  # int형으로 변환
+
+                # 위에서 받아온 시간만큼 기다리기
+                time.sleep(remaining_sec + 60)  # time.sleep(1) # 확인하기에 너무 길어서 10초로 설정
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+
+
+win.mainloop() # 창 실행
